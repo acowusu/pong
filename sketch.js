@@ -47,7 +47,6 @@ function handlecollisions() {
   }
 }
 function draw() {
-  // background(220);
   text("press enter to play", 150, 200);
 
   if (gameisplaying) {
@@ -69,20 +68,17 @@ function draw() {
       text("Computer wins", 100, 100);
       gameisplaying = false;
     }
-    //
-    // console.log(circlevelocity)
+    
 
     circleposition = drawball(circlevelocity, circleposition, 1);
     drawpadel([20, mouseY - 40]);
     drawpadel(agentpadel);
-    // speed = Math.abs(speed)
 
-    let spd =
+    let spd = // so we can change the speed of the padel 
       circleposition[1] < agentpadel[1] + 40 ? -humanscore - 1 : humanscore + 1;
     agentpadel = [agentpadel[0], agentpadel[1] + spd];
   }
 
-  // agentpadel = movepadel(agentpadel, circleposition, 1, 10)
 }
 
 function drawball(velocity, position, timestep) {
@@ -111,18 +107,9 @@ function drawpadel(position) {
 
 function newposition(position, velocity, timestep) {
   return position.map(function callback(currentposition, index) {
-    // Return element for new_array
     return timestep * velocity[index] + currentposition;
   }, this);
 }
 
-  //   if(ballposition[1]> paddleposition[1]){
-  //       console.log( newposition(paddleposition, [0,speed],timestep))
-  // //   }else
-  //     if (ballposition[1]< paddleposition[1]){
-  //       speed = -Math.abs(speed)
-  //     }else {
-  //       speed = 0
-  //     }
-  //    return [paddleposition[0], paddleposition[1]+ speed]
+
 
