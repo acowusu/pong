@@ -1,12 +1,191 @@
-<!DOCTYPE html><html><head>
-    <script src="p5.js"></script>
-    <script src="p5.sound.min.js"></script>
-    <link rel="stylesheet" type="text/css" href="style.css">
-    <meta charset="utf-8">
-
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <style>
+      canvas {
+        border: 1px solid #d3d3d3;
+        background-color: #f1f1f1;
+      }
+    </style>
   </head>
-  <body>
-    <script src="sketch.js"></script>
-  
+  <body onload="start()">
+    <script>
+      var mouseX = 0;
+      var mouseY = 0;
+      var circleposition = [200, 200];
+      var agentpadel = [360, 200];
+      var circlevelocity = [Math.random() * 5, Math.random() * 5];
+      var speed = 1;
+      var humanscore = 0;
+      agentscore = 0;
+      gameisplaying = false;
+      // add handler for enter key
+      document.addEventListener("keyup", function(event) {
+        if (event.key == "Enter") {
+          gameisplaying = true;
+          humanscore = 0;
+          agentscore = 0;
+        }
+      });
+      // calculates the new position of a point given its current position velocity and the change in time
+      function newposition(position, velocity, timestep) {
+        return position.map(function callback(currentposition, index) {
+          return timestep * velocity[index] + currentposition;
+        }, this);
+      }
 
-</body></html>
+      function start() {
+        game.start();
+      }
+
+      var game = {
+        canvas: document.createElement("canvas"),
+        start: function() {
+          this.canvas.width = 400;
+          this.canvas.height = 400;
+          this.context = this.canvas.getContext("2d");
+          this.context.fillStyle = "red";
+          document.body.insertBefore(this.canvas, document.body.childNodes[0]);
+          this.loop = setInterval(draw, 20);
+        }
+      };
+      // draws the ball at its next position and returns its posiion
+      function drawball(velocity, position, timestep) {
+        position = newposition(position, velocity, timestep);
+        circle(position[0], position[1], 25);
+        return position;
+      }
+      // draws a circle 
+      function circle(x, y, radius) {
+        game.context.beginPath();
+        game.context.arc(x, y, radius, 0, 2 * Math.PI);
+        game.context.stroke();
+      }
+
+      // draws text on the screen at a given position
+      function text(text, x, y) {
+        //game.context.font = "30px Arial";
+        game.context.fillStyle = "blue";
+        game.context.fillText(text, x, y);
+      }
+      // causes the ball to bounce off walls
+      function handlecollisions() {
+        if (circleposition[0] < 60) {
+          circlevelocity = [
+            -circlevelocity[0] * 1.01,
+            circlevelocity[1] * 1.01
+          ];
+          if (Math.abs(circleposition[1] - mouseY) > 55) {
+            console.log("miss");
+            circleposition = [200, 200];
+
+            agentscore++;
+          }
+          console.log("triggered08");
+        }
+        if (circleposition[0] > 340) {
+          circlevelocity = [
+            -circlevelocity[0] * 1.01,
+            circlevelocity[1] * 1.01
+          ];
+          if (Math.abs(circleposition[1] - agentpadel[1]) > 55) {
+            console.log("miss");
+            console.log(circleposition[1]);
+            console.log(agentpadel[1]);
+            humanscore++;
+          }
+          console.log("triggered0");
+        }
+        if (circleposition[1] > 380) {
+          circlevelocity = [
+            circlevelocity[0] * 1.01,
+            -circlevelocity[1] * 1.01
+          ]; // add some uncertainty to the direction of the refraction
+        }
+        if (circleposition[1] < 40) {
+          circlevelocity = [
+            circlevelocity[0] * 1.01,
+            -circlevelocity[1] * 1.01
+          ];
+        }
+      }
+      // draws the padel at its next position
+      function drawpadel(position) {
+        let l = 80;
+        let w = 20;
+        game.context.beginPath();
+        game.context.fillStyle = "black";
+
+        game.context.fillRect(position[0], position[1], w, l);
+        game.context.stroke();
+        //quad(
+        //   position[0],
+        //   position[1],
+        //   position[0],
+        //  position[1] + l,
+        //  position[0] + w,
+        //   position[1] + l,
+        //  position[0] + w,
+        //  position[1]
+        //);
+
+        return position;
+      }
+      // this function is called every frame
+
+      function handelscores() {
+        if (humanscore == 5) {
+            background("rgb(0, 255, 20)"); // make backgroud green
+
+            text("You win", 100, 100);
+            gameisplaying = false; // end game
+          } else if (agentscore == 5) {
+            background("rgb(255, 0, 20)"); // make background red
+
+            text("Computer wins", 100, 100);
+            gameisplaying = false;  // end game
+          }
+      }
+      function draw() {
+        text("press enter to play", 150, 200); 
+
+        if (gameisplaying) {
+          background("white");
+
+          text("the score is " + humanscore + ":" + agentscore, 10, 60);
+
+          handlecollisions();
+          handelscores()
+       
+
+          circleposition = drawball(circlevelocity, circleposition, 1); // this computes the balls new position and draws it there
+          drawpadel([20, mouseY - 40]); // 40px offset so that the users cursor is in the middle
+          drawpadel(agentpadel); 
+         
+          // increade the speed of the agents padel
+          let spd =
+            circleposition[1] < agentpadel[1] + 40
+              ? -humanscore - 1
+              : humanscore + 1;
+          agentpadel = [agentpadel[0], agentpadel[1] + spd];
+        }
+
+      }
+
+      function background(color) {
+
+        game.context.fillStyle = color; // color of fill
+        game.context.fillRect(0, 0, 400, 400); // since this is the size of the canvas  - we could also use game.canvas.herght and width
+      }
+
+      function mouse(event) {
+        // this is the event handler form ouse movement in the box
+        mouseX = event.pageX;
+        mouseY = event.pageY;
+      }
+
+      game.canvas.addEventListener("mousemove", mouse, false);
+    </script>
+  </body>
+</html>
